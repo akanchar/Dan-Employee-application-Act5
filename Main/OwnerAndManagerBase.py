@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from tkinter import messagebox
 
 from Tabs.EmployeeData import create_employee_history_tab
 from Tabs.Summary import SummaryTab
@@ -75,20 +76,13 @@ class ManageEmployees(tk.Frame):
         tabs = {}
         print(self.controller.role)
 
-        # for just the owner
-        if self.controller.role == 'Owner':
-            # make a store
-            create_store_tab(content_frame, tabs, add_store, delete_store)
-
-            # check employee history for 1 year
-            create_employee_history_tab(content_frame, tabs,365)
-
-            # withdraw
-            create_withdraw_tab(content_frame, tabs)
 
         # if anyone sees this Daniel is the greatest of all time Easter egg!!
         # for owner and manager
         if self.controller.role == 'Owner' or 'Manager':
+            # Bonus and employee rate
+            create_bonus_tab(content_frame, tabs)
+
             # make payroll
             create_payroll_tab(content_frame, tabs,employee_id)
 
@@ -103,27 +97,36 @@ class ManageEmployees(tk.Frame):
             # merchandise
             create_merchandise_tab(content_frame, tabs)
 
-            # Bonus and employee rate
-            create_bonus_tab(content_frame, tabs)
-
             # expenses
             create_expenses_tab(content_frame, tabs)
-
 
             # close out tab
             close_out = CloseOutTab(content_frame, self.controller,selected_store)
             close_out.grid(row=0, column=0, sticky="nsew")
             tabs["Close Out"] = close_out
 
-            # Add the Summary tab
-            summary_tab = SummaryTab(content_frame, self.controller)
-            summary_tab.grid(row=0, column=0, sticky="nsew")
-            tabs["Summary"] = summary_tab
 
         # for just the manager
         if self.controller.role == 'Manager':
             # check employee history for 30 days
             create_employee_history_tab(content_frame, tabs,30)
+
+        # for just the owner
+        if self.controller.role == 'Owner':
+            # check employee history for 1 year
+            create_employee_history_tab(content_frame, tabs,365)
+
+            # make a store
+            create_store_tab(content_frame, tabs, add_store, delete_store)
+
+            # withdraw
+            create_withdraw_tab(content_frame, tabs)
+
+            # Add the Summary tab
+            summary_tab = SummaryTab(content_frame, self.controller)
+            summary_tab.grid(row=0, column=0, sticky="nsew")
+            tabs["Summary"] = summary_tab
+
 
         # -------------------------------
         # Function to Show Selected Tab

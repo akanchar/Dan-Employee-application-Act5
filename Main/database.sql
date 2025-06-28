@@ -84,14 +84,15 @@ CREATE TABLE if not exists Invoice (
 CREATE TABLE IF NOT EXISTS Payroll (
     payroll_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
-    date DATE NOT NULL,
+    store_id INT NOT NULL,
+    timeofDate DATE NOT NULL,
     hourly_rate DECIMAL(10, 2) NOT NULL,
     hours DECIMAL(10, 2) NOT NULL,
     total_payment DECIMAL(10, 2) NOT NULL,
     payment_with_bonus DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
+    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id),
+    FOREIGN KEY (store_id) REFERENCES Store(store_id)
 );
-
 CREATE TABLE IF NOT EXISTS Expense (
     expense_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT,
@@ -174,5 +175,52 @@ BEGIN
     END IF;
 END;
 //
+
+DELIMITER ;
+
+
+# trigger to calculate the net profit before inserting or updating a summary
+DELIMITER $$
+
+CREATE TRIGGER calculate_net_profit_before_insert_or_update
+BEFORE INSERT ON summary
+FOR EACH ROW
+BEGIN
+    SET NEW.net_profit = NEW.cash_and_credit -
+                         (NEW.total_expenses + NEW.total_merchandise+ NEW.total_payroll);
+END$$
+
+#trigger to calculate the net profit before updating a summary
+DELIMITER $$
+
+CREATE TRIGGER calculate_net_profit_before_update
+BEFORE UPDATE ON summary
+FOR EACH ROW
+BEGIN
+    SET NEW.net_profit = NEW.cash_and_credit -
+                         (NEW.total_expenses + NEW.total_merchandise + NEW.total_payroll);
+END$$
+
+DELIMITER ;
+
+# trigger to calculate the current balance before inserting or updating a summary
+DELIMITER $$
+
+CREATE TRIGGER calculate_current_balance_before_insert
+BEFORE INSERT ON summary
+FOR EACH ROW
+BEGIN
+    SET NEW.current_balance = NEW.net_profit - NEW.total_withdraw;
+END$$
+
+# trigger to calculate the current balance before updating a summary
+DELIMITER $$
+
+CREATE TRIGGER calculate_current_balance_before_update
+BEFORE UPDATE ON summary
+FOR EACH ROW
+BEGIN
+    SET NEW.current_balance = NEW.net_profit - NEW.total_withdraw;
+END$$
 
 DELIMITER ;
